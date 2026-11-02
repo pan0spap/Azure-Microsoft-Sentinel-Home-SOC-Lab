@@ -18,3 +18,12 @@ I also added a geographical attack map and MITRE ATT&CK mapping based on failed 
 - Microsoft Sentinel
 - Kusto Query Language (KQL)
 - MITRE ATT&CK Framework
+
+## Project Architecture
+
+1. **Deploy a Windows VM** in Microsoft Azure.
+2. **Collect Windows Security Events** from the virtual machine.
+3. **Forward logs** to Log Analytics Workspace.
+4. **Analyze failed login attempts** using Microsoft Sentinel and Kusto Query Language (KQL).
+5. **Visualize attacker IP geolocations** using an attack map.
+6. **Map relevant security activity** to the MITRE ATT&CK Framework.
