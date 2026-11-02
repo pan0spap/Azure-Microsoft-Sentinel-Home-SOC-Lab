@@ -27,3 +27,17 @@ I also added a geographical attack map and MITRE ATT&CK mapping based on failed 
 4. **Analyze failed login attempts** using Microsoft Sentinel and Kusto Query Language (KQL).
 5. **Visualize attacker IP geolocations** using an attack map.
 6. **Map relevant security activity** to the MITRE ATT&CK Framework.
+
+
+```mermaid
+flowchart TD
+    A["Internet"] --> B["Azure"]
+    B --> C["Windows VM (Honeypot)"]
+    C --> D["Windows Security Logs"]
+    D --> E["Azure Monitor Agent"]
+    E --> F["Log Analytics Workspace"]
+    F --> G["Microsoft Sentinel"]
+    G --> H["KQL Queries"]
+    H --> I["Failed Login Analysis"]
+    I --> J["Attack Map"]
+    I --> K["MITRE ATT&CK Mapping"]
