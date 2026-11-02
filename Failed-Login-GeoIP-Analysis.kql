@@ -1,0 +1,12 @@
+let GeoIPDB_FULL = _GetWatchlist("geo");  // Load GeoIP watchlist
+let WindowsEvents = SecurityEvent;  // Retrieve Windows security events
+
+WindowsEvents | where EventID == 4625  // Filter failed logins and enrich IP addresses
+| order by TimeGenerated desc
+
+| evaluate ipv4_lookup(GeoIPDB_FULL, IpAddress, network)  // Match IP addresses against GeoIP network ranges
+
+| summarize FailureCount = count() by IpAddress, latitude, longitude, cityname, countryname  // Aggregate failed attempts by geographical location
+
+| project FailureCount, AttackerIp = IpAddress, latitude, longitude, city = cityname, country = countryname,
+friendly_location = strcat(cityname, " (", countryname, ")");

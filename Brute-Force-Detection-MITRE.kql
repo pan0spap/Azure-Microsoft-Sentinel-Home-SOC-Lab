@@ -1,0 +1,32 @@
+SecurityEvent  // Retrieve failed authentication events
+| where TimeGenerated > ago(30d)
+| where EventID == 4625
+
+| extend SourceIP = tostring(IpAddress)  // Extract source IP and targeted account
+| extend TargetAccount = tostring(Account)
+
+| where isnotempty(SourceIP)  // Exclude empty and local source addresses
+| where SourceIP !in ("-", "127.0.0.1", "::1")
+
+| summarize FailedAttempts = count(), TargetedAccounts = dcount(TargetAccount), FirstSeen = min(TimeGenerated), LastSeen = max(TimeGenerated) by SourceIP  // Calculate failed attempts and unique targeted accounts per IP
+
+// Classify potential password spraying and guessing behavior
+| extend TechniqueID = case(                             
+    TargetedAccounts >= 5 and FailedAttempts >= 10, "T1110.003",
+    FailedAttempts >= 10, "T1110.001",
+    "Unclassified"
+)
+| extend TechniqueName = case(
+    TechniqueID == "T1110.003", "Password Spraying",
+    TechniqueID == "T1110.001", "Password Guessing",
+    "Other Failed Logins"
+)
+| extend Tactic = iff(TechniqueID == "Unclassified", "Unclassified", "Credential Access")
+| extend Severity = case(
+    FailedAttempts >= 50, "High",
+    FailedAttempts >= 10, "Medium",
+    "Low"
+)
+| summarize TotalFailedAttempts = sum(FailedAttempts), SourceIPs = dcount(SourceIP), TargetedAccounts = sum(TargetedAccounts), FirstSeen = min(FirstSeen), LastSeen = max(LastSeen) by TechniqueID, TechniqueName, Tactic, Severity
+| project TechniqueID, TechniqueName, Tactic, Severity, TotalFailedAttempts, SourceIPs, TargetedAccounts, FirstSeen, LastSeen
+| order by TotalFailedAttempts desc
